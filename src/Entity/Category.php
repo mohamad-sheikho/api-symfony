@@ -5,8 +5,11 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints\Valid;
+use ApiPlatform\Metadata\GetCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\Length;
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ApiResource]
 class Category
@@ -18,7 +21,9 @@ class Category
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:Post'])]
+    #[Groups(['read:Post', 'write:Post']),
+    Length(min: 5)
+    ]
     private ?string $name = null;
 
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Article::class)]
