@@ -2,22 +2,31 @@
 
 namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\CollectionOperationInterface;
 use App\Repository\ArticleRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Post;
+use Attribute;
 use DateTimeImmutable;
+use Doctrine\Common\Annotations\Annotation\Attributes;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\Valid;
+
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
 #[ApiResource
 (
+    
     normalizationContext: ['groups' => ['read']], 
     denormalizationContext:['groups' => ['write:Post']],
+ 
     operations:[
         new Put(),
         new Delete(),
@@ -27,17 +36,21 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ]
      
         ),
-        new GetCollection(),
+        new GetCollection(
+        ),
         new Post(
             normalizationContext: [
-                'groups' => ['read:collection', 'read:item', 'read:Post']
-            ]
+                'groups' => ['read:collection', 'read:item', 'read:Post'],
+               
+            ],
+
         ),
 
         
     ]
     
 )]
+
 
 class Article
 {
@@ -48,7 +61,9 @@ class Article
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:collection', 'write:Post'])]
+    #[Groups(['read:collection', 'write:Post']),
+    Length(min: 5)]
+    
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
@@ -66,8 +81,10 @@ class Article
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'articles')]
-    #[Groups(['read:item', 'write:Post'])]
+#[ORM\ManyToOne(inversedBy: 'articles', cascade: ['persist'])]
+    #[Groups(['read:item', 'write:Post']),
+    Valid()
+    ]
     private ?Category $category = null;
 
 
