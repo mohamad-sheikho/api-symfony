@@ -1,55 +1,133 @@
 <?php
 
 namespace App\Entity;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\CollectionOperationInterface;
-use App\Repository\ArticleRepository;
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
+
+
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Post;
-use Attribute;
+
+use ApiPlatform\Metadata\Put;
+use App\Controller\ArticleCountController;
+use App\Controller\ArticlePublishController;
+use App\Repository\ArticleRepository;
 use DateTimeImmutable;
-use Doctrine\Common\Annotations\Annotation\Attributes;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Valid;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
-#[ApiResource
-(
-    
-    normalizationContext: ['groups' => ['read']], 
-    denormalizationContext:['groups' => ['write:Post']],
- 
-    operations:[
-        new Put(),
-        new Delete(),
-        new Get(
-            normalizationContext: [
-                'groups' => ['read:collection', 'read:item', 'read:Post']
-            ]
-     
-        ),
-        new GetCollection(
-        ),
-        new Post(
-            normalizationContext: [
-                'groups' => ['read:collection', 'read:item', 'read:Post'],
+#[
+    ApiResource(
+
+
+        normalizationContext: ['groups' => ['read:collection'], 'openapi_definition_name' => 'Collection'],
+
+        denormalizationContext: ['groups' => ['write:Post']],
+        paginationItemsPerPage: 2,
+        paginationMaximumItemsPerPage: 7,
+        paginationClientItemsPerPage: true,
+
+
+
+        operations: [
+            new Get(
+                name: 'GET', uriTemplate: '/articles/count', controller: ArticleCountController::class,
+                read:false,
+                openapiContext: [
+                    'pagination_enable' => false,
+                    'filters' => [],
+                    'summary' => 'Récupère le nombre total d\'articles',
+                    'parameters' => [
+                        [
+                            'in' => 'query',
+                            'name' => 'online',
+                            'schema' => [
+                                'type' => 'integer',
+                                'maximum' => 1,
+                                'minimum' => 0
+                            ],
+                            'description' => 'Filtre les articles en ligne'
+                        ]
+                    ],
+                    'responses' => [
+                        '200' => [
+                            'description' => 'Ok',
+                            'content' => [
+                                'application/json' => [
+                                    'schema' => [
+                                        'typpe' => 'integer',
+                                        'example' => 3
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
                
-            ],
+            ),
 
-        ),
 
-        
-    ]
-    
-)]
+
+            new Put(),
+
+            new Delete(),
+
+            new Get(
+                normalizationContext: [
+                    'groups' => ['read:collection', 'read:item', 'read:Post'],
+                    'openapi_definition_name' => 'Detail',
+
+
+                ]
+
+            ),
+
+            new GetCollection(),
+
+            new Post(
+                normalizationContext: [
+                    'groups' => ['read:collection', 'read:item', 'read:Post']
+                ]
+            ),
+
+            new Post(
+                name: 'publish',
+                uriTemplate: '/articles/{id}/publish',
+                controller: ArticlePublishController::class,
+                write:false,
+                openapiContext: [
+
+                    'summary' => 'Permet de publier un article',
+                    'requestBody' =>  [
+                        'content' => [
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ),
+        ]
+
+
+
+    )
+
+]
+#[ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'title' => 'partial', 'content' => 'partial'])]
+
 
 
 class Article
@@ -61,9 +139,11 @@ class Article
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:collection', 'write:Post']),
-    Length(min: 5)]
-    
+    #[
+        Groups(['read:collection', 'write:Post']),
+        Length(min: 5)
+    ]
+
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
@@ -81,18 +161,30 @@ class Article
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedAt = null;
 
-#[ORM\ManyToOne(inversedBy: 'articles', cascade: ['persist'])]
-    #[Groups(['read:item', 'write:Post']),
-    Valid()
+    #[ORM\ManyToOne(inversedBy: 'articles', cascade: ['persist'])]
+    #[
+        Groups(['read:item', 'write:Post']),
+        Valid()
     ]
     private ?Category $category = null;
 
+    #[ORM\Column]
+    #[
+        Groups(['read:collection']),
+        ApiProperty(openapiContext: ['type' =>'boolean', 'description' => 'En ligne ou pas ?'])
 
-    public function __construct(){
+    ]
+    private ?bool $online = false;
+
+
+
+
+    public function __construct()
+    {
         $this->createdAt = new DateTimeImmutable();
         $this->updatedAt = new DateTimeImmutable();
     }
-   
+
     public function getId(): ?int
     {
         return $this->id;
@@ -169,4 +261,18 @@ class Article
 
         return $this;
     }
+
+    public function isOnline(): ?bool
+    {
+        return $this->online;
+    }
+
+    public function setOnline(bool $online): self
+    {
+        $this->online = $online;
+
+        return $this;
+    }
+
+
 }
