@@ -22,7 +22,7 @@ class Category
 
     #[ORM\Column(length: 255)]
     #[Groups(['read:Post', 'write:Post']),
-    Length(min: 5)
+    Length(min: 3)
     ]
     private ?string $name = null;
 
