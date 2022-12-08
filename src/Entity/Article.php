@@ -11,6 +11,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 
 use ApiPlatform\Metadata\Put;
@@ -36,6 +37,8 @@ use Symfony\Component\Validator\Constraints\Valid;
         paginationItemsPerPage: 2,
         paginationMaximumItemsPerPage: 7,
         paginationClientItemsPerPage: true,
+
+
 
 
 
@@ -73,12 +76,13 @@ use Symfony\Component\Validator\Constraints\Valid;
                         ]
                     ]
                 ]
-               
+
             ),
 
 
 
             new Put(),
+            new Patch(),
 
             new Delete(),
 
