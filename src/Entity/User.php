@@ -15,7 +15,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
-//    security: 'is_granted("ROLE_USER")',
+    security: 'is_granted("ROLE_USER")',
     operations: [
         new Get(
             controller:  NotFoundAction::class,
@@ -32,7 +32,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ),
 
         new Get(
-          name: 'Get',  uriTemplate: '/me', controller: MeController::class, read: false,
+            security: 'is_granted("ROLE_USER")',
+          name: 'GET',  uriTemplate: '/me', controller: MeController::class, read: false,
             openapiContext: [
                 'pagination_enable' => false,
               'security' => ['cookieAuth' => []],
