@@ -17,19 +17,19 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     security: 'is_granted("ROLE_USER")',
     operations: [
-        new Get(
-            controller:  NotFoundAction::class,
-            openapiContext: [
-                ['summary' => 'hidden'],
-                'read' => false,
-                'output' => false,
-
-
-
-
-            ]
-
-            ),
+//        new Get(
+//            controller:  NotFoundAction::class,
+//            openapiContext: [
+//                ['summary' => 'hidden'],
+//                'read' => false,
+//                'output' => false,
+//
+//
+//
+//
+//            ]
+//
+//            ),
 
         new Get(
             security: 'is_granted("ROLE_USER")',
@@ -40,9 +40,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ],
           normalizationContext: ['groups' => ['read:User']]
         ),
-        new GetCollection(
 
-        )
     ],
 
 )]

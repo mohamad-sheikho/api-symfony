@@ -3,21 +3,23 @@
 namespace App\Controller;
 
 
-
+use Symfony\Component\Security\Core\User\UserInterface;
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Security;
 
 
 class MeController extends AbstractController
 {
-private $security;
 
-    public function __construct(Security $security){}
 
-    public function __invoke()
+    public function __construct(private Security $security){}
+
+    public function __invoke(): ?UserInterface
     {
-       $user = $this->security->getUser(true);
-       return $user;
+
+        $user = $this->security->getUser();
+        return $user;
     }
 
 }
