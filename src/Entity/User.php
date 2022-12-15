@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\GetCollection;
 use App\Controller\MeController;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Lexik\Bundle\JWTAuthenticationBundle\Security\User\JWTUserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -33,10 +34,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
         new Get(
             security: 'is_granted("ROLE_USER")',
-          name: 'GET',  uriTemplate: '/me', controller: MeController::class, read: false,
+          name: 'me ',  uriTemplate: '/me', controller: MeController::class, read: false,
             openapiContext: [
                 'pagination_enable' => false,
-              'security' => ['cookieAuth' => []],
+              'security' => [['bearerAuth' => []]]
             ],
           normalizationContext: ['groups' => ['read:User']]
         ),
@@ -44,7 +45,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     ],
 
 )]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -71,6 +72,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getId(): ?int
     {
         return $this->id;
+    }
+    public function setId(?int $id): self{
+        $this->id = $id;
+        return $this;
     }
 
     public function getEmail(): ?string
@@ -136,5 +141,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public static function createFromPayload($id, array $payload)
+    {
+        return (new User())->setId($id)->setEmail($payload['username']?? '');
+
+//        $user->setEmail($username);
+
+
     }
 }

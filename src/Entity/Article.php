@@ -42,11 +42,17 @@ use Symfony\Component\Validator\Constraints\Valid;
 
 
 
+
+
         operations: [
+
+
             new Get(
-                name: 'GET', uriTemplate: '/articles/count', controller: ArticleCountController::class,
+                name: 'Count', uriTemplate: '/articles/count', controller: ArticleCountController::class,
                 read:false,
                 openapiContext: [
+
+
                     'pagination_enable' => false,
                     'filters' => [],
                     'summary' => 'Récupère le nombre total d\'articles',
@@ -68,7 +74,7 @@ use Symfony\Component\Validator\Constraints\Valid;
                             'content' => [
                                 'application/json' => [
                                     'schema' => [
-                                        'typpe' => 'integer',
+                                        'type' => 'integer',
                                         'example' => 3
                                     ]
                                 ]
@@ -87,22 +93,26 @@ use Symfony\Component\Validator\Constraints\Valid;
             new Delete(),
 
             new Get(
+
                 normalizationContext: [
                     'groups' => ['read:collection', 'read:item', 'read:Post'],
-                    'openapi_definition_name' => 'Detail',
-
-
-                ]
+                    'openapi_definition_name' => 'Detail',],
 
             ),
 
-            new GetCollection(),
+            new GetCollection(
+                openapiContext: [
+                    'security' => [['bearerAuth' => []]]
+
+                ],
+            ),
 
             new Post(
                 normalizationContext: [
                     'groups' => ['read:collection', 'read:item', 'read:Post']
                 ]
             ),
+
 
             new Post(
                 name: 'publish',
@@ -130,7 +140,7 @@ use Symfony\Component\Validator\Constraints\Valid;
     )
 
 ]
-#[ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'title' => 'partial', 'content' => 'partial'])]
+#[ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'title' => 'partial', 'content' => 'partial',  ])]
 
 
 

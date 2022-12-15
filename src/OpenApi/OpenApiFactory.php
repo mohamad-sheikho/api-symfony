@@ -32,10 +32,10 @@ class OpenApiFactory implements OpenApiFactoryInterface
         }
         //        $openApi->getPaths()->addPath('/ping', new PathItem(null, 'Ping', null, new Operation('ping-id',[],[], 'Répond')));
         $schemas =  $openApi->getComponents()->getSecuritySchemes();
-        $schemas['cookieAuth'] = new \ArrayObject([
-            'type' => 'apiKey',
-            'in' => 'cookie',
-            'name' => 'PHPSESSID'
+        $schemas['bearerAuth'] = new \ArrayObject([
+            'type' => 'http',
+            'scheme' => 'bearer',
+            'name' => 'JWT'
         ]);
         $schemas = $openApi->getComponents()->getSchemas();
         $schemas['Credentials'] = new \ArrayObject([
@@ -49,6 +49,19 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'type' => 'string',
                     'example' => '0000'
                 ]
+            ]
+        ]);
+
+        $schemas['Token'] = new \ArrayObject([
+            'type' => 'object',
+            'properties' => [
+                'token' => [
+                    'type' => 'string',
+                    'readOnly' => true,
+
+                ],
+
+
             ]
         ]);
         $pathItem = new PathItem(
@@ -66,11 +79,11 @@ class OpenApiFactory implements OpenApiFactoryInterface
                 ),
                 responses: [
                     '200' => [
-                        'description' => 'Utilisateur connecté',
+                        'description' => 'Token JWT ',
                         'content' => [
                             'application/json' => [
                                 'schema' => [
-                                    '$ref' => '#/components/schemas/User-read.User'
+                                    '$ref' => '#/components/schemas/Token'
                                 ]
                             ]
                         ]
