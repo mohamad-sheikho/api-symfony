@@ -32,7 +32,7 @@ use Symfony\Component\Validator\Constraints\Length;
         new Patch()
     ]
 )]
-class Category
+class Category implements UserOwnedInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -48,6 +48,9 @@ class Category
 
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Article::class)]
     private Collection $articles;
+
+    #[ORM\ManyToOne(inversedBy: 'categories')]
+    private ?User $user = null;
 
     public function __construct()
     {
@@ -97,6 +100,18 @@ class Category
                 $article->setCategory(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
 
         return $this;
     }

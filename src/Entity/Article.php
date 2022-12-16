@@ -34,8 +34,7 @@ use Symfony\Component\Validator\Constraints\Valid;
         normalizationContext: ['groups' => ['read:collection'], 'openapi_definition_name' => 'Collection'],
 
         denormalizationContext: ['groups' => ['write:Post']],
-        paginationItemsPerPage: 2,
-        paginationMaximumItemsPerPage: 7,
+
         paginationClientItemsPerPage: true,
 
 
@@ -144,7 +143,7 @@ use Symfony\Component\Validator\Constraints\Valid;
 
 
 
-class Article
+class Article implements UserOwnedInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -189,6 +188,9 @@ class Article
 
     ]
     private ?bool $online = false;
+
+    #[ORM\ManyToOne(inversedBy: 'articles')]
+    private ?User $user = null;
 
 
 
@@ -284,6 +286,18 @@ class Article
     public function setOnline(bool $online): self
     {
         $this->online = $online;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
 
         return $this;
     }
